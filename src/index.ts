@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import * as cmdargs from 'commander';
 
 import * as qadf from './qadf';
+import * as svg from './svg';
 
 const CERT_DIR = '/etc/letsencrypt/archive/comntr.live/';
 const CERT_KEY_FILE = 'privkey1.pem';
@@ -28,9 +29,11 @@ function handleQuestionRequest(req: http.IncomingMessage, res: http.ServerRespon
   if (!match) return;
   let [, payload] = match;
   let { question, answer } = qadf.derive(payload);
-  res.statusCode = 200;
-  res.write(question);
   log.i('answer:', answer);
+  let svgxml = svg.render(question);
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'image/svg+xml');
+  res.write(svgxml);
 }
 
 function handlePostmarkRequest(req: http.IncomingMessage, res: http.ServerResponse) {

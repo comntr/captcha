@@ -1,6 +1,6 @@
 import * as sha1 from 'sha1';
 
-const EXPIRATION_MS = 60 * 1000; // 1 min
+const EXPIRATION_MS = 3 * 60 * 1000; // 3 mins
 const NHEX_DIGITS = 2;
 const MODULO = 100;
 
