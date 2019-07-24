@@ -1,0 +1,17 @@
+{
+  "scripts": {
+    "start": "npm i && npm run build && sudo node bin/ -p 2556",
+    "clean": "rm -rf bin/",
+    "build": "npm run clean && node_modules/.bin/tsc",
+    "push": "scp -r src *.json root@comntr.live:~/comntr/captcha"
+  },
+  "dependencies": {
+    "@types/node": "^12.0.7",
+    "@types/mkdirp": "^0.5.2",
+    "supercop.wasm": "5.0.1",
+    "commander": "2.19.0",
+    "mkdirp": "0.5.1",
+    "sha1": "1.1.1",
+    "typescript": "3.5.1"
+  }
+}
