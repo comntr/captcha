@@ -6,30 +6,31 @@ import * as cmdargs from 'commander';
 
 import * as qadf from './qadf';
 import * as svg from './svg';
-
-const CERT_DIR = '/etc/letsencrypt/archive/comntr.live/';
-const CERT_KEY_FILE = 'privkey1.pem';
-const CERT_FILE = 'cert1.pem';
-const GET_QUESTION_PATTERN = /^\/question\/(.+)$/;
-const GET_POSTMARK_PATTERN = /^\/postmark\/(.+)\?answer=(.+)$/;
+import * as config from './config';
+import * as ed25519 from './ed25519';
 
 const log = {
-  i(...args) { console.log(...args); },
+  i(...args) { if (cmdargs.logs) console.log(...args); },
 };
 
 log.i('process.argv:', process.argv.join(' '));
 
 cmdargs
   .option('-p, --port <n>', 'HTTP port.', parseInt)
+  .option('-s, --seed <s>', 'Seed.')
+  .option('-d, --logs', 'Print logs.')
   .parse(process.argv);
+
+qadf.seed(cmdargs.seed);
 
 function handleQuestionRequest(req: http.IncomingMessage, res: http.ServerResponse) {
   if (req.method != 'GET') return;
-  let match = GET_QUESTION_PATTERN.exec(req.url);
+  let match = config.GET_QUESTION_PATTERN.exec(req.url);
   if (!match) return;
   let [, payload] = match;
   let { question, answer } = qadf.derive(payload);
-  log.i('answer:', answer);
+  log.i('Q:', question);
+  log.i('A:', answer);
   let svgxml = svg.render(question);
   res.statusCode = 200;
   res.setHeader('Content-Type', 'image/svg+xml');
@@ -38,7 +39,7 @@ function handleQuestionRequest(req: http.IncomingMessage, res: http.ServerRespon
 
 function handlePostmarkRequest(req: http.IncomingMessage, res: http.ServerResponse) {
   if (req.method != 'GET') return;
-  let match = GET_POSTMARK_PATTERN.exec(req.url);
+  let match = config.GET_POSTMARK_PATTERN.exec(req.url);
   if (!match) return;
   let [, payload, givenAnswer] = match;
   let { answer } = qadf.derive(payload);
@@ -49,7 +50,8 @@ function handlePostmarkRequest(req: http.IncomingMessage, res: http.ServerRespon
     return;
   }
 
-  let signature = '...';
+  let signature = ed25519.sign(payload);
+  log.i('sig:', signature);
   res.statusCode = 200;
   res.write(signature);
 }
@@ -72,11 +74,11 @@ function handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
 }
 
 function createServer() {
-  log.i('Checking the cert dir:', CERT_DIR);
-  if (fs.existsSync(CERT_DIR)) {
+  log.i('Checking the cert dir:', config.CERT_DIR);
+  if (fs.existsSync(config.CERT_DIR)) {
     log.i('Starting HTTPS server.');
-    let key = fs.readFileSync(path.join(CERT_DIR, CERT_KEY_FILE));
-    let cert = fs.readFileSync(path.join(CERT_DIR, CERT_FILE));
+    let key = fs.readFileSync(path.join(config.CERT_DIR, config.CERT_KEY_FILE));
+    let cert = fs.readFileSync(path.join(config.CERT_DIR, config.CERT_FILE));
     return https.createServer({ key, cert }, handleRequest);
   } else {
     log.i('SSL certs not found.');

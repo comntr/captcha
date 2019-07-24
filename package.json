@@ -1,6 +1,7 @@
 {
   "scripts": {
     "start": "npm i && npm run build && sudo node bin/ -p 2556",
+    "dbg": "npm start -- --logs",
     "clean": "rm -rf bin/",
     "build": "npm run clean && node_modules/.bin/tsc",
     "push": "scp -r src *.json root@comntr.live:~/comntr/captcha"

@@ -1,18 +1,20 @@
 import * as sha1 from 'sha1';
+import * as config from './config';
 
-const EXPIRATION_MS = 3 * 60 * 1000; // 3 mins
-const NHEX_DIGITS = 2;
-const MODULO = 100;
+let nonce = '';
 
-let nonce = sha1(
-  sha1(Date.now()) +
-  sha1(Math.random()));
+export function seed(text: string) {
+  nonce = sha1(text || Math.random() + Date.now());
+  console.log('seed:', nonce);
+}
 
 export function derive(payload: string) {
-  let time = Date.now() / EXPIRATION_MS | 0;
-  let hash = sha1(sha1(time) + sha1(payload) + sha1(nonce));
-  let x = parseInt(hash.slice(0, NHEX_DIGITS), 16) % MODULO
-  let y = parseInt(hash.slice(NHEX_DIGITS, NHEX_DIGITS * 2), 16) % MODULO;
+  let nhd = config.NHEX_DIGITS;
+  let mod = config.MODULO;
+  let time = Date.now() / config.EXPIRATION_MS | 0;
+  let hash = sha1(time + payload + nonce);
+  let x = parseInt(hash.slice(0, nhd), 16) % mod;
+  let y = parseInt(hash.slice(nhd, nhd * 2), 16) % mod;
   let question = x + '+' + y;
   let answer = x + y + ''; // eval(q)
   return { question, answer };
