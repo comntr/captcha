@@ -67,12 +67,12 @@ export function getPubKeys() {
 
 export function sign(text: string): string {
   let keys = getKeys();
-  let time = new Date().toJSON().slice(0, 10);
-  let msg = Buffer.from(sha1(time + ':' + text));
+  let time = new Date().toJSON().replace(/\.\d+/, '');
+  let msg = Buffer.from(sha1(time + '/' + text));
   let sig = supercop.sign(msg, keys.publicKey, keys.secretKey);
-  return [
-    time,
-    base64(keys.publicKey),
-    base64(sig),
-  ].join(':');
+  return JSON.stringify({
+    pubkey: base64(keys.publicKey).slice(0, config.PUBKEY_PREFIX),
+    time: time,
+    sig: base64(sig),
+  });
 }
