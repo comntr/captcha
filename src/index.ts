@@ -57,7 +57,7 @@ function handlePostmarkRequest(req: http.IncomingMessage, res: http.ServerRespon
 }
 
 function handleKeysRequest(req: http.IncomingMessage, res: http.ServerResponse) {
-  if (req.method != 'GET' && req.url != '/keys') return;
+  if (req.method != 'GET' || req.url != '/keys') return;
   let pubKeys = ed25519.getPubKeys();
   let json = JSON.stringify(pubKeys);
   res.statusCode = 200;
