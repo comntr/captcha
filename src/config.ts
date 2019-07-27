@@ -7,3 +7,4 @@ export const CERT_KEY_FILE = 'privkey1.pem';
 export const CERT_FILE = 'cert1.pem';
 export const GET_QUESTION_PATTERN = /^\/question\/(.+)$/;
 export const GET_POSTMARK_PATTERN = /^\/postmark\/(.+)\?answer=(.+)$/;
+export const KEYS_FILE = '/etc/comntr/captcha/keys.json';

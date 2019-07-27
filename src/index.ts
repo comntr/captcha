@@ -56,12 +56,22 @@ function handlePostmarkRequest(req: http.IncomingMessage, res: http.ServerRespon
   res.write(signature);
 }
 
+function handleKeysRequest(req: http.IncomingMessage, res: http.ServerResponse) {
+  if (req.method != 'GET' && req.url != '/keys') return;
+  let pubKeys = ed25519.getPubKeys();
+  let json = JSON.stringify(pubKeys);
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'application/json');
+  res.write(json);
+}
+
 function handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
   log.i(req.method, req.url);
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   try {
     res.statusCode = 400;
+    handleKeysRequest(req, res);
     handleQuestionRequest(req, res);
     handlePostmarkRequest(req, res);
   } catch (err) {
